@@ -1,0 +1,211 @@
+/* Author: Anoushka Mishra  
+ * December 9, 2016 
+ */
+
+public class GoKartTrack {
+	
+	// private instance variables
+	private int capacity; //number of lanes on this track
+	private GoKart[] contestants; //an array GoKart objects entered into the race
+	private int lastEnteredContestant = -1; //index of the last filled spot in the contestants array
+	private int powerStationType = GoKart.GAS; //tells type of power source station available on this track
+	private boolean roughCondition = false; ///tells if the track is in good or bad condition
+	private int experienceCap = 5; //maximum experience level allowed on this track
+
+	//public static constants
+	public static final int STANDARD_CAPACITY = 15;
+	public static final int ROUGH_LIMIT = 5;
+
+	//0-argument constructor
+	public GoKartTrack() {
+		this.capacity = STANDARD_CAPACITY;
+		this.contestants = new GoKart[STANDARD_CAPACITY];
+
+	}
+
+	//4-argument constructor
+	public GoKartTrack(int capacity1, int powerStationType1, boolean roughCondition1, int experienceCap1) {
+		this.contestants = new GoKart[STANDARD_CAPACITY];
+		this.lastEnteredContestant = -1;
+		this.capacity = capacity1;
+		if (powerStationType1 == GoKart.GAS && powerStationType1 == GoKart.ELECTRIC
+				&& powerStationType1 == GoKart.HYBRID) {
+			this.powerStationType = powerStationType1;
+		} else {
+			powerStationType = GoKart.GAS;
+		}
+		this.roughCondition = roughCondition1;
+		this.experienceCap = experienceCap1;
+	}
+
+	///method toCapacity
+	public boolean toCapacity() {
+		boolean full = true;
+		for (int pos = 0; pos < this.capacity; pos++) {
+			if (contestants[pos] == null) {
+				full = false;
+			} else {
+				full = true;
+			}
+		}
+		return full;
+	}
+
+	//method enterGoKart
+	public boolean enterGoKart(String name1, int powerSource1) {
+
+		boolean enter = true;
+		GoKart gokart1 = new GoKart();
+
+		if (toCapacity() == true) {
+			System.out.println("Cannot enter go-kart, track is full.");
+			enter = false;
+		} else if (powerSource1 == GoKart.GAS && this.powerStationType == GoKart.ELECTRIC) {
+			System.out.println("Cannot enter go-kart, this is an unsupported power source.");
+			enter = false;
+
+		} else if (powerSource1 == GoKart.ELECTRIC && this.powerStationType == GoKart.GAS) {
+			System.out.println("Cannot enter go-kart, this is an unsupported power source.");
+			enter = false;
+
+		} else {
+
+			gokart1.setName(name1);
+			gokart1.setPowerSource(powerSource1);
+			lastEnteredContestant++;
+			contestants[lastEnteredContestant] = gokart1;
+			enter = true;
+		}
+
+		return enter;
+	}
+
+	//method getGoKart
+	public GoKart getGoKart(int spot) {
+		if (contestants[spot] != null) {
+			return contestants[spot];
+		} else {
+			return null;
+		}
+	}
+
+	//instance method toString
+	public String toString() {
+		
+		String description = "\n---- Go-Kart Track ---- \n";
+		
+	
+		description = description + "Spots: 0-" + (this.capacity - 1) + ", occupied to lane " + lastEnteredContestant
+				+ "\n";
+
+		String type;
+		if (this.powerStationType == GoKart.GAS) {
+			type = "Gas";
+		} else if (this.powerStationType == GoKart.ELECTRIC) {
+			type = "Electric";
+		} else if (this.powerStationType == GoKart.HYBRID) {
+			type = "Hybrid";
+		} else {
+			type = "Gas";
+		}
+
+		description = description + "Power Station: " + type + "\n";
+		
+		String rough;
+		if(this.roughCondition == true){
+			rough = "Yes";
+		} else {
+			rough = "No";
+		}
+		
+		
+		description = description + "Rough Condition: "+rough+ "\nExperience Cap: " + this.experienceCap
+			+ "\nRACERS: \n";
+		String gokarts = "";
+
+		for (int i = 0; i <= lastEnteredContestant; i++) {
+			
+
+			gokarts = gokarts+ contestants[i].toString() +"\n";
+		}
+
+		description = description + gokarts + "\n------------------------";
+
+		return description;
+
+	}
+
+	///instance methodtotalFixingNeeded()
+	public int totalFixingNeeded() {
+		int fixes = 0;
+		for (int i = 0; i < lastEnteredContestant; i++) {
+			int fix = 10 - (contestants[i].getCondition());
+			fixes = fixes + fix;
+		}
+
+		return fixes;
+	}
+
+	///instance method raceKart
+	public boolean raceKart(int spotnum) {
+
+		if (contestants[spotnum] == null) {
+			System.out.println("You cannot race a go-kart ñ there is no go-kart in lane " + spotnum + ".");
+			return false;
+		} else if (contestants[spotnum].getCondition() < ROUGH_LIMIT && roughCondition == true) {
+			System.out.println(contestants[spotnum].getName() + " cannot race ñ his kart is in bad condition!");
+			return false;
+		} else if (contestants[spotnum].getExperience() > this.experienceCap) {
+			System.out.println(contestants[spotnum].getName() + " cannot race ñ he is too experienced.");
+			return false;
+		} else {
+			contestants[spotnum].driveOneLap();
+			return true;
+		}
+
+	}
+
+	//instance method sendForRepairs
+	public int sendForRepairs(int spotnum1, int numfixes) {
+		if (contestants[spotnum1] == null) {
+			System.out.println("There is no go-kart in lane " + spotnum1 + ".");
+			return 0;
+		} else {
+			int conditionimproved = 0;
+			for (int i = 1; i <= numfixes; i++) {
+				int fixkart = contestants[spotnum1].fixKart();
+				conditionimproved += fixkart;
+			}
+			return conditionimproved;
+		}
+	}
+
+	public static void main(String[] args) {
+		GoKartTrack track = new GoKartTrack(6, GoKart.GAS, true, 3);
+		System.out.println(track);
+		track.raceKart(2); // Should detect that there is not a go-kart there
+		track.enterGoKart("Bowser", GoKart.GAS);
+		track.enterGoKart("Yoshi", GoKart.ELECTRIC); // wonít add, wrong power type
+		track.enterGoKart("Koopa", GoKart.GAS);
+		track.enterGoKart("King boo", GoKart.HYBRID);
+		track.enterGoKart("Mario", GoKart.HYBRID);
+		track.enterGoKart("Luigi", GoKart.GAS);
+		track.enterGoKart("Toad", GoKart.HYBRID);
+		track.enterGoKart("Wario", GoKart.GAS); // wonít add, track full
+		System.out.println(track);
+		track.raceKart(3); track.raceKart(3); track.raceKart(3); track.raceKart(3);
+		track.raceKart(0);
+		track.raceKart(4); track.raceKart(4); track.raceKart(4);
+		track.raceKart(6); // no kart there (in fact, its out of range!)
+		System.out.println(track);
+		System.out.println("Go-karts were improved by:");
+		System.out.println(track.sendForRepairs(0, 1));
+		System.out.println(track.sendForRepairs(1, 1));
+		System.out.println(track.sendForRepairs(3, 2));
+		System.out.println(track.sendForRepairs(8, 6)); // detects no cart
+		 System.out.println(track);
+		System.out.println("Condition for all karts needs to be improved by a total of: ");
+		System.out.println(track.totalFixingNeeded());
+	}
+
+}
